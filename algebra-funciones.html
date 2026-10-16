@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Álgebra y Funciones — Práctica tipo EMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     PALETA — tema independiente de los otros niveles
+     (índigo/azul, distinto del morado de Nivel 1 y el
+     salmón de Nivel 2, para que se identifique como una
+     serie de práctica distinta: "tipo EMS")
+  ========================================================= */
+  :root{
+    --color-primario: #4C5FD5;
+    --color-primario-claro: #DCE1FA;
+    --color-acento: #3645B5;
+    --color-fondo: #F5F6FC;
+    --color-tarjeta: #FFFFFF;
+    --color-texto: #262A4A;
+    --color-texto-suave: #6B6F9B;
+    --color-exito: #4CAF82;
+    --color-exito-fondo: #E7F6EE;
+    --color-error: #D6564B;
+    --color-error-fondo: #FCEAE8;
+    --color-borde: #E1E3F5;
+    --radio: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    font-family:'Nunito', sans-serif;
+    background:var(--color-fondo);
+    color:var(--color-texto);
+    display:flex;
+    justify-content:center;
+    padding:24px 16px 60px;
+  }
+
+  .contenedor{
+    width:100%;
+    max-width:640px;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:20px;
+  }
+
+  header h1{
+    font-size:1.4rem;
+    font-weight:800;
+    margin:0 0 4px;
+    color:var(--color-acento);
+  }
+
+  header p{
+    margin:0;
+    color:var(--color-texto-suave);
+    font-size:0.95rem;
+  }
+
+  /* Barra de progreso */
+  .progreso-wrap{
+    margin:20px 0 24px;
+  }
+  .progreso-texto{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    color:var(--color-texto-suave);
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  .progreso-barra{
+    height:8px;
+    border-radius:99px;
+    background:var(--color-primario-claro);
+    overflow:hidden;
+  }
+  .progreso-relleno{
+    height:100%;
+    background:var(--color-primario);
+    border-radius:99px;
+    transition:width 0.35s ease;
+  }
+
+  /* Tarjeta de pregunta */
+  .tarjeta{
+    background:var(--color-tarjeta);
+    border-radius:var(--radio);
+    padding:22px 20px 24px;
+    box-shadow:0 4px 18px rgba(54,69,181,0.08);
+    border:1px solid var(--color-borde);
+  }
+
+  .etiqueta-tipo{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.78rem;
+    font-weight:700;
+    color:var(--color-acento);
+    background:var(--color-primario-claro);
+    padding:4px 10px;
+    border-radius:99px;
+    margin-bottom:14px;
+  }
+
+  .enunciado{
+    font-size:1.05rem;
+    font-weight:700;
+    margin:0 0 18px;
+    line-height:1.45;
+    white-space:pre-line;
+  }
+
+  .visual-wrap{
+    margin-bottom:20px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .visual-wrap svg{
+    max-width:100%;
+    height:auto;
+  }
+
+  /* Opciones */
+  .opciones{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .opcion{
+    text-align:left;
+    padding:13px 16px;
+    border-radius:12px;
+    border:2px solid var(--color-borde);
+    background:var(--color-tarjeta);
+    font-family:inherit;
+    font-size:1rem;
+    font-weight:600;
+    color:var(--color-texto);
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+
+  .opcion:hover:not(:disabled){
+    border-color:var(--color-primario);
+    transform:translateY(-1px);
+  }
+
+  .opcion:disabled{
+    cursor:default;
+  }
+
+  .opcion.correcta{
+    border-color:var(--color-exito);
+    background:var(--color-exito-fondo);
+    color:#256B4B;
+  }
+
+  .opcion.incorrecta{
+    border-color:var(--color-error);
+    background:var(--color-error-fondo);
+    color:#8C332B;
+  }
+
+  /* Feedback */
+  .feedback{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:0.92rem;
+    font-weight:600;
+    line-height:1.45;
+    display:none;
+  }
+  .feedback.mostrar{ display:block; }
+  .feedback.exito{ background:var(--color-exito-fondo); color:#256B4B; }
+  .feedback.error{ background:var(--color-error-fondo); color:#8C332B; }
+  .feedback .explicacion{
+    display:block;
+    font-weight:400;
+    margin-top:4px;
+    opacity:0.9;
+  }
+
+  /* Botón siguiente */
+  .btn-siguiente{
+    margin-top:16px;
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:12px;
+    background:var(--color-primario);
+    color:#fff;
+    font-family:inherit;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+    display:none;
+  }
+  .btn-siguiente.mostrar{ display:block; }
+  .btn-siguiente:hover{ background:var(--color-acento); }
+
+  /* Pantalla final */
+  .final{
+    text-align:center;
+    padding:30px 20px;
+  }
+  .final .puntaje{
+    font-size:2.6rem;
+    font-weight:800;
+    color:var(--color-acento);
+    margin:10px 0;
+  }
+  .final p{ color:var(--color-texto-suave); }
+  .btn-repetir{
+    margin-top:18px;
+    padding:13px 28px;
+    border:none;
+    border-radius:12px;
+    background:var(--color-primario);
+    color:#fff;
+    font-family:inherit;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+  }
+  .btn-repetir:hover{ background:var(--color-acento); }
+
+  .oculto{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+  <header>
+    <h1>Álgebra y Funciones</h1>
+    <p>Práctica tipo EMS — 20 preguntas</p>
+  </header>
+
+  <div class="progreso-wrap">
+    <div class="progreso-texto">
+      <span id="progreso-actual">Pregunta 1 de 20</span>
+      <span id="progreso-aciertos"></span>
+    </div>
+    <div class="progreso-barra"><div class="progreso-relleno" id="progreso-relleno"></div></div>
+  </div>
+
+  <div class="tarjeta" id="tarjeta-pregunta">
+    <span class="etiqueta-tipo" id="etiqueta-tipo"></span>
+    <p class="enunciado" id="enunciado"></p>
+    <div class="visual-wrap oculto" id="visual-wrap"></div>
+    <div class="opciones" id="opciones"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn-siguiente" id="btn-siguiente">Siguiente →</button>
+  </div>
+
+  <div class="tarjeta final oculto" id="tarjeta-final">
+    <p>¡Completaste la práctica!</p>
+    <div class="puntaje" id="puntaje-final">0/20</div>
+    <p>Podés repetirla cuando quieras: el orden de las opciones cambia cada vez.</p>
+    <button class="btn-repetir" id="btn-repetir">Repetir práctica</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   BANCO DE PREGUNTAS — Álgebra y Funciones (tipo EMS)
+   Preguntas y respuestas fijas; en cada intento solo se
+   reordenan las opciones de cada pregunta.
+
+   4 bloques de 5 preguntas, cada uno de más simple a más
+   complejo, intercalados para que no se agrupen por tema:
+   A) Expresiones algebraicas a partir de un enunciado
+   B) Sistemas de ecuaciones 2x2
+   C) Funciones lineales / rectas de ajuste
+   D) Funciones cuadráticas
+
+   Cada pregunta tiene "explicacion": el razonamiento que se
+   muestra después de responder, no solo el resultado.
+========================================================= */
+
+const bloqueA = [
+  {
+    tipo: 'expresiones',
+    pregunta: 'Sea x un número. ¿Cuál expresión representa "el doble de ese número aumentado en 5"?',
+    opciones: ['2x + 5', '2(x + 5)', '5x + 2', 'x + 10'],
+    correcta: 0,
+    explicacion: '"El doble de un número" es 2x; "aumentado en 5" significa sumarle 5: 2x + 5.'
+  },
+  {
+    tipo: 'expresiones',
+    pregunta: 'Juan compra x entradas a $350 cada una y paga además un cargo fijo de $100 por la reserva. ¿Qué expresión representa el total que paga?',
+    opciones: ['350x + 100', '350(x + 100)', '100x + 350', '(350 + 100)x'],
+    correcta: 0,
+    explicacion: 'El costo variable es 350 por cada entrada (350x) y se le suma el cargo fijo de 100, que no depende de x.'
+  },
+  {
+    tipo: 'expresiones',
+    pregunta: 'Un salón de fiestas cobra una tarifa base de $5000 más $800 por cada hora x que se alquila. ¿Qué expresión representa el costo total?',
+    opciones: ['800x + 5000', '5000x + 800', '800(x + 5000)', '5000 − 800x'],
+    correcta: 0,
+    explicacion: 'Por cada hora se suman 800 (800x), y la tarifa base de 5000 se paga siempre, sin depender de x.'
+  },
+  {
+    tipo: 'expresiones',
+    pregunta: 'El ancho de un rectángulo mide x metros. Su largo mide 2 metros menos que el triple del ancho. ¿Qué expresión representa el largo?',
+    opciones: ['3x − 2', '3(x − 2)', '2 − 3x', 'x/3 − 2'],
+    correcta: 0,
+    explicacion: '"El triple del ancho" es 3x, y "2 metros menos que" eso se resta después de triplicar: 3x − 2.'
+  },
+  {
+    tipo: 'expresiones',
+    pregunta: 'Un taxi cobra una bajada de bandera de $80 más $45 por cada kilómetro recorrido x. De noche se aplica un recargo del 20% sobre el costo total del viaje. ¿Qué expresión representa el costo de un viaje nocturno?',
+    opciones: ['1,2(45x + 80)', '45x + 80 + 20', '1,2 · 45x + 80', '45(1,2x) + 80'],
+    correcta: 0,
+    explicacion: 'El costo base del viaje es 45x + 80. El recargo del 20% se aplica sobre ese total completo, por eso se multiplica todo el paréntesis por 1,2.'
+  },
+];
+
+const bloqueB = [
+  {
+    tipo: 'sistemas',
+    pregunta: 'Resolviendo el sistema:\nx + y = 10\nx − y = 2\n¿Cuáles son los valores de x e y?',
+    opciones: ['x = 6, y = 4', 'x = 4, y = 6', 'x = 8, y = 2', 'x = 5, y = 5'],
+    correcta: 0,
+    explicacion: 'Sumando ambas ecuaciones: 2x = 12, entonces x = 6. Reemplazando en x + y = 10: y = 4.'
+  },
+  {
+    tipo: 'sistemas',
+    pregunta: 'Dos entradas de cine y un pochoclo cuestan $540. Una entrada de cine y un pochoclo cuestan $320. ¿Cuánto cuesta cada entrada de cine y cada pochoclo?',
+    opciones: ['Cine $220, pochoclo $100', 'Cine $100, pochoclo $220', 'Cine $270, pochoclo $50', 'Cine $160, pochoclo $200'],
+    correcta: 0,
+    explicacion: 'Restando la segunda compra de la primera: (2c + p) − (c + p) = 540 − 320, entonces c = 220. Reemplazando en c + p = 320: p = 100.'
+  },
+  {
+    tipo: 'sistemas',
+    pregunta: 'Sofía compró 4 cuadernos y 3 lápices por $700. Otro día compró 2 cuadernos y 5 lápices por $560. ¿Cuánto cuesta cada cuaderno y cada lápiz?',
+    opciones: ['Cuaderno $130, lápiz $60', 'Cuaderno $100, lápiz $100', 'Cuaderno $150, lápiz $40', 'Cuaderno $160, lápiz $20'],
+    correcta: 0,
+    explicacion: 'Multiplicando la segunda ecuación por 2: 4c + 10l = 1120. Restando la primera (4c + 3l = 700): 7l = 420, entonces l = 60. Reemplazando en 4c + 3l = 700: c = 130.'
+  },
+  {
+    tipo: 'sistemas',
+    pregunta: 'En un kiosco, 3 chocolates y 2 alfajores cuestan $390. 5 chocolates y 4 alfajores cuestan $690. ¿Cuánto cuesta cada chocolate y cada alfajor?',
+    opciones: ['Chocolate $90, alfajor $60', 'Chocolate $60, alfajor $90', 'Chocolate $110, alfajor $30', 'Chocolate $70, alfajor $75'],
+    correcta: 0,
+    explicacion: 'Multiplicando la primera ecuación por 2: 6c + 4a = 780. Restando la segunda (5c + 4a = 690): c = 90. Reemplazando en 3c + 2a = 390: a = 60.'
+  },
+  {
+    tipo: 'sistemas',
+    pregunta: 'En una feria, 3 jugos y 2 sándwiches cuestan $410. 1 jugo y 4 sándwiches cuestan $420. ¿Cuánto cuesta cada jugo y cada sándwich?',
+    opciones: ['Jugo $80, sándwich $85', 'Jugo $85, sándwich $80', 'Jugo $100, sándwich $55', 'Jugo $60, sándwich $115'],
+    correcta: 0,
+    explicacion: 'Multiplicando la primera ecuación por 2: 6j + 4s = 820. Restando la segunda (j + 4s = 420): 5j = 400, entonces j = 80. Reemplazando en j + 4s = 420: s = 85.'
+  },
+];
+
+const bloqueC = [
+  {
+    tipo: 'lineales',
+    pregunta: 'En la función y = 4x + 7, ¿cuál es la pendiente?',
+    opciones: ['4', '7', '11', '1/4'],
+    correcta: 0,
+    explicacion: 'En y = mx + b, el coeficiente que acompaña a x es la pendiente: m = 4.'
+  },
+  {
+    tipo: 'lineales',
+    pregunta: 'Una recta pasa por los puntos (0, 3) y (2, 11). ¿Cuál es su pendiente?',
+    opciones: ['4', '8', '2', '3'],
+    correcta: 0,
+    explicacion: 'Pendiente = (y₂ − y₁)/(x₂ − x₁) = (11 − 3)/(2 − 0) = 8/2 = 4.'
+  },
+  {
+    tipo: 'lineales',
+    pregunta: 'Dos plataformas de streaming tienen y suscriptores en total después de x meses:\nPlataforma A: y = 120x + 500\nPlataforma B: y = 90x + 800\n¿Cuál plataforma gana suscriptores más rápido mes a mes?',
+    opciones: ['Plataforma A, porque tiene mayor pendiente', 'Plataforma B, porque tiene mayor ordenada al origen', 'Ambas crecen igual de rápido', 'Plataforma B, porque empieza con más suscriptores'],
+    correcta: 0,
+    svg: 'lineasAB',
+    explicacion: 'La pendiente indica cuánto crece y por cada mes. A tiene pendiente 120 y B tiene pendiente 90; como 120 > 90, A crece más rápido, aunque B empiece arriba.'
+  },
+  {
+    tipo: 'lineales',
+    pregunta: 'Usando las mismas plataformas (A: y = 120x + 500; B: y = 90x + 800), ¿en qué mes tendrán la misma cantidad de suscriptores?',
+    opciones: ['Mes 10', 'Mes 5', 'Mes 15', 'Mes 8'],
+    correcta: 0,
+    svg: 'lineasAB',
+    explicacion: 'Igualando las expresiones: 120x + 500 = 90x + 800 → 30x = 300 → x = 10.'
+  },
+  {
+    tipo: 'lineales',
+    pregunta: 'Las ventas mensuales de dos cafeterías, en pedidos, según los meses x desde que abrió Norte:\nCentro: y = 45x + 1200\nNorte: y = 70x + 600\nSi las tendencias se mantienen, ¿a partir de qué mes Norte superará a Centro en pedidos?',
+    opciones: ['Mes 25', 'Mes 20', 'Mes 30', 'Mes 15'],
+    correcta: 0,
+    explicacion: 'Norte supera a Centro cuando 70x + 600 > 45x + 1200 → 25x > 600 → x > 24. Por lo tanto, a partir del mes 25.'
+  },
+];
+
+const bloqueD = [
+  {
+    tipo: 'cuadraticas',
+    pregunta: 'Dada f(x) = x² − 4x + 3, ¿cuánto vale f(2)?',
+    opciones: ['−1', '1', '3', '−3'],
+    correcta: 0,
+    explicacion: 'f(2) = 2² − 4·2 + 3 = 4 − 8 + 3 = −1.'
+  },
+  {
+    tipo: 'cuadraticas',
+    pregunta: 'La altura de una pelota lanzada sigue h(t) = −5t² + 20t (t en segundos). ¿En qué momento alcanza la altura máxima?',
+    opciones: ['t = 2 s', 't = 4 s', 't = 1 s', 't = 5 s'],
+    correcta: 0,
+    svg: 'parabolaSimple',
+    explicacion: 'El vértice de una parábola y = at² + bt + c está en t = −b/(2a) = −20/(2·(−5)) = 2.'
+  },
+  {
+    tipo: 'cuadraticas',
+    pregunta: 'Usando la misma función h(t) = −5t² + 20t, ¿cuál es la altura máxima que alcanza la pelota?',
+    opciones: ['20 m', '10 m', '25 m', '15 m'],
+    correcta: 0,
+    svg: 'parabolaSimple',
+    explicacion: 'La altura máxima se da en t = 2: h(2) = −5·(2)² + 20·2 = −20 + 40 = 20 m.'
+  },
+  {
+    tipo: 'cuadraticas',
+    pregunta: 'Un jugador lanza una pelota cuya trayectoria es y = −0,2x² + 1,6x + 1,8 (x: distancia horizontal en metros, y: altura en metros). ¿Cuál es la altura de la pelota cuando recorrió 3 metros en horizontal?',
+    opciones: ['4,8 m', '3,8 m', '5,2 m', '4,2 m'],
+    correcta: 0,
+    svg: 'trayectoriaTiro',
+    explicacion: 'y(3) = −0,2·(3)² + 1,6·3 + 1,8 = −1,8 + 4,8 + 1,8 = 4,8 m.'
+  },
+  {
+    tipo: 'cuadraticas',
+    pregunta: 'Continuando con el lanzamiento y = −0,2x² + 1,6x + 1,8, hay un aro a 7 metros de distancia horizontal y a 3,05 m de altura. Según la función, cuando la pelota está a 7 m, ¿queda más alta o más baja que el aro?',
+    opciones: ['Más alta, ya que a los 7 m la pelota está a 3,2 m de altura', 'Más baja, ya que a los 7 m la pelota está a 2,8 m de altura', 'Exactamente a la altura del aro', 'No se puede determinar con estos datos'],
+    correcta: 0,
+    svg: 'trayectoriaTiro',
+    explicacion: 'y(7) = −0,2·(7)² + 1,6·7 + 1,8 = −9,8 + 11,2 + 1,8 = 3,2 m. Como 3,2 m > 3,05 m, a esa distancia la pelota está más alta que el aro.'
+  },
+];
+
+// Intercalado: A,B,C,D repetido 5 veces (5+5+5+5 = 20)
+const preguntas = [];
+for (let i = 0; i < 5; i++) {
+  preguntas.push(bloqueA[i], bloqueB[i], bloqueC[i], bloqueD[i]);
+}
+
+const etiquetas = {
+  expresiones: '🔤 Expresiones',
+  sistemas: '🔀 Sistemas',
+  lineales: '📈 Func. lineal',
+  cuadraticas: '🏀 Func. cuadrática',
+};
+
+/* =========================================================
+   SVGs de apoyo (dibujados a mano, sin librerías externas)
+========================================================= */
+function svgLineasAB(){
+  // y = 120x+500 (A) y y = 90x+800 (B), x de 0 a 15 aprox, se cruzan en x=10,y=1700
+  const w=280,h=200,pad=34;
+  const xMax=15, yMax=2200;
+  const sx = (x)=> pad + (x/xMax)*(w-2*pad);
+  const sy = (y)=> h-pad - (y/yMax)*(h-2*pad);
+  const aPts = [[0,500],[15,2300>yMax?yMax:2300]].map(([x,y])=>[x, 120*x+500]);
+  const bPts = [[0,800],[15,90*15+800]];
+  const toPath = pts => pts.map(([x,y])=>`${sx(x)},${sy(Math.min(y,yMax))}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${pad}" y1="${h-pad}" x2="${w-10}" y2="${h-pad}" stroke="#B9BEE8" stroke-width="1.5"/>
+    <line x1="${pad}" y1="${h-pad}" x2="${pad}" y2="10" stroke="#B9BEE8" stroke-width="1.5"/>
+    <text x="${w-14}" y="${h-pad+14}" font-size="9" fill="#6B6F9B" text-anchor="end" font-family="Nunito">meses</text>
+    <polyline points="${toPath(aPts)}" fill="none" stroke="#4C5FD5" stroke-width="2.5"/>
+    <polyline points="${toPath(bPts)}" fill="none" stroke="#E8998D" stroke-width="2.5"/>
+    <circle cx="${sx(10)}" cy="${sy(1700)}" r="3.5" fill="#262A4A"/>
+    <text x="${sx(12)}" y="${sy(120*12+500)-8}" font-size="9" fill="#4C5FD5" font-family="Nunito" font-weight="700">A</text>
+    <text x="${sx(12)}" y="${sy(90*12+800)+14}" font-size="9" fill="#E8998D" font-family="Nunito" font-weight="700">B</text>
+  </svg>`;
+}
+
+function svgParabolaSimple(){
+  // h(t) = -5t^2 + 20t, dominio 0..4
+  const w=280,h=200,pad=34;
+  const tMax=4, hMax=22;
+  const sx = t => pad + (t/tMax)*(w-2*pad);
+  const sy = y => h-pad - (y/hMax)*(h-2*pad);
+  let pts=[];
+  for(let t=0;t<=4;t+=0.2){
+    const y = -5*t*t+20*t;
+    pts.push(`${sx(t)},${sy(y)}`);
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${pad}" y1="${h-pad}" x2="${w-10}" y2="${h-pad}" stroke="#B9BEE8" stroke-width="1.5"/>
+    <line x1="${pad}" y1="${h-pad}" x2="${pad}" y2="10" stroke="#B9BEE8" stroke-width="1.5"/>
+    <text x="${w-14}" y="${h-pad+14}" font-size="9" fill="#6B6F9B" text-anchor="end" font-family="Nunito">t (s)</text>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#4C5FD5" stroke-width="2.5"/>
+    <circle cx="${sx(2)}" cy="${sy(20)}" r="3.5" fill="#262A4A"/>
+    <text x="${sx(2)+6}" y="${sy(20)-6}" font-size="9" fill="#262A4A" font-family="Nunito">vértice</text>
+  </svg>`;
+}
+
+function svgTrayectoriaTiro(){
+  // y = -0.2x^2+1.6x+1.8, dominio 0..9
+  const w=280,h=200,pad=34;
+  const xMax=9, yMax=6;
+  const sx = x => pad + (x/xMax)*(w-2*pad);
+  const sy = y => h-pad - (y/yMax)*(h-2*pad);
+  let pts=[];
+  for(let x=0;x<=9;x+=0.25){
+    const y = -0.2*x*x+1.6*x+1.8;
+    if(y<0) continue;
+    pts.push(`${sx(x)},${sy(y)}`);
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${pad}" y1="${h-pad}" x2="${w-10}" y2="${h-pad}" stroke="#B9BEE8" stroke-width="1.5"/>
+    <line x1="${pad}" y1="${h-pad}" x2="${pad}" y2="10" stroke="#B9BEE8" stroke-width="1.5"/>
+    <text x="${w-14}" y="${h-pad+14}" font-size="9" fill="#6B6F9B" text-anchor="end" font-family="Nunito">x (m)</text>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#4C5FD5" stroke-width="2.5"/>
+  </svg>`;
+}
+
+const dibujosSvg = {
+  lineasAB: svgLineasAB,
+  parabolaSimple: svgParabolaSimple,
+  trayectoriaTiro: svgTrayectoriaTiro,
+};
+
+/* =========================================================
+   ESTADO Y LÓGICA
+========================================================= */
+let indiceActual = 0;
+let aciertos = 0;
+let ordenOpciones = [];
+let respondida = false;
+
+const elEtiquetaTipo = document.getElementById('etiqueta-tipo');
+const elEnunciado = document.getElementById('enunciado');
+const elVisualWrap = document.getElementById('visual-wrap');
+const elOpciones = document.getElementById('opciones');
+const elFeedback = document.getElementById('feedback');
+const elBtnSiguiente = document.getElementById('btn-siguiente');
+const elProgresoActual = document.getElementById('progreso-actual');
+const elProgresoAciertos = document.getElementById('progreso-aciertos');
+const elProgresoRelleno = document.getElementById('progreso-relleno');
+const elTarjetaPregunta = document.getElementById('tarjeta-pregunta');
+const elTarjetaFinal = document.getElementById('tarjeta-final');
+const elPuntajeFinal = document.getElementById('puntaje-final');
+
+function mezclarOpciones(pregunta){
+  const arr = pregunta.opciones.map((texto, i) => ({texto, esCorrecta: i === pregunta.correcta}));
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderPregunta(){
+  respondida = false;
+  const p = preguntas[indiceActual];
+  ordenOpciones = mezclarOpciones(p);
+
+  elEtiquetaTipo.textContent = etiquetas[p.tipo] || p.tipo;
+  elEnunciado.textContent = p.pregunta;
+  elFeedback.className = 'feedback';
+  elFeedback.innerHTML = '';
+  elBtnSiguiente.classList.remove('mostrar');
+
+  if(p.svg && dibujosSvg[p.svg]){
+    try{
+      elVisualWrap.innerHTML = dibujosSvg[p.svg]();
+      elVisualWrap.classList.remove('oculto');
+    } catch(e){
+      elVisualWrap.innerHTML = '';
+      elVisualWrap.classList.add('oculto');
+    }
+  } else {
+    elVisualWrap.innerHTML = '';
+    elVisualWrap.classList.add('oculto');
+  }
+
+  elOpciones.innerHTML = '';
+  ordenOpciones.forEach((op) => {
+    const btn = document.createElement('button');
+    btn.className = 'opcion';
+    btn.textContent = op.texto;
+    btn.addEventListener('click', () => seleccionarOpcion(btn, op));
+    elOpciones.appendChild(btn);
+  });
+
+  elProgresoActual.textContent = `Pregunta ${indiceActual + 1} de ${preguntas.length}`;
+  elProgresoAciertos.textContent = indiceActual > 0 ? `${aciertos} correctas` : '';
+  elProgresoRelleno.style.width = `${(indiceActual / preguntas.length) * 100}%`;
+}
+
+function seleccionarOpcion(boton, opcionElegida){
+  if(respondida) return;
+  respondida = true;
+
+  const p = preguntas[indiceActual];
+  const botones = elOpciones.querySelectorAll('.opcion');
+  botones.forEach(b => b.disabled = true);
+
+  if(opcionElegida.esCorrecta){
+    boton.classList.add('correcta');
+    elFeedback.className = 'feedback mostrar exito';
+    elFeedback.innerHTML = `¡Correcto! <span class="explicacion">${p.explicacion}</span>`;
+    aciertos++;
+  } else {
+    boton.classList.add('incorrecta');
+    const correctaTexto = ordenOpciones.find(o => o.esCorrecta).texto;
+    botones.forEach(b => { if(b.textContent === correctaTexto) b.classList.add('correcta'); });
+    elFeedback.className = 'feedback mostrar error';
+    elFeedback.innerHTML = `No es esa. La respuesta correcta es: ${correctaTexto}. <span class="explicacion">${p.explicacion}</span>`;
+  }
+
+  elBtnSiguiente.classList.add('mostrar');
+  elBtnSiguiente.textContent = indiceActual === preguntas.length - 1 ? 'Ver resultado' : 'Siguiente →';
+}
+
+elBtnSiguiente.addEventListener('click', () => {
+  indiceActual++;
+  if(indiceActual >= preguntas.length){
+    mostrarFinal();
+  } else {
+    renderPregunta();
+  }
+});
+
+function mostrarFinal(){
+  elTarjetaPregunta.classList.add('oculto');
+  elTarjetaFinal.classList.remove('oculto');
+  elProgresoRelleno.style.width = '100%';
+  elProgresoActual.textContent = `Pregunta ${preguntas.length} de ${preguntas.length}`;
+  elProgresoAciertos.textContent = `${aciertos} correctas`;
+  elPuntajeFinal.textContent = `${aciertos}/${preguntas.length}`;
+}
+
+document.getElementById('btn-repetir').addEventListener('click', () => {
+  indiceActual = 0;
+  aciertos = 0;
+  elTarjetaFinal.classList.add('oculto');
+  elTarjetaPregunta.classList.remove('oculto');
+  renderPregunta();
+});
+
+renderPregunta();
+</script>
+</body>
+</html>
