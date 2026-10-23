@@ -58,6 +58,16 @@
     color:var(--color-acento);
   }
 
+  header p.indicacion{
+    margin:12px 0 10px;
+    padding:12px 14px;
+    background:var(--color-primario-claro);
+    border-radius:12px;
+    color:var(--color-texto);
+    font-size:0.9rem;
+    line-height:1.5;
+  }
+
   header p{
     margin:0;
     color:var(--color-texto-suave);
@@ -172,6 +182,26 @@
     color:#8C332B;
   }
 
+  /* Opción elegida (sin decir si es correcta hasta el final) */
+  .opcion.elegida{
+    border-color:var(--color-primario);
+    background:var(--color-primario-claro);
+  }
+
+  /* Revisión final */
+  .revision{ text-align:left; margin-top:18px; }
+  .revision-item{
+    border-top:1px solid var(--color-borde);
+    padding:14px 0;
+    font-size:0.92rem;
+    line-height:1.5;
+  }
+  .revision-item .rev-enunciado{ font-weight:700; white-space:pre-line; margin:0 0 6px; color:var(--color-texto); }
+  .revision-item .rev-tu{ margin:0 0 4px; font-weight:600; }
+  .revision-item .rev-tu.ok{ color:#256B4B; }
+  .revision-item .rev-tu.mal{ color:#8C332B; }
+  .revision-item .rev-exp{ margin:4px 0 0; color:var(--color-texto-suave); }
+
   /* Feedback */
   .feedback{
     margin-top:14px;
@@ -244,6 +274,7 @@
 <div class="contenedor">
   <header>
     <h1>Álgebra y Funciones</h1>
+    <p class="indicacion">Aunque en las actividades solo se solicite una respuesta al finalizar se debe presentar una breve explicación del razonamiento utilizado para llegar a ella. Expresar el procedimiento con palabras propias o registrar los pasos principales favorece la organización del pensamiento y permite identificar posibles errores.</p>
     <p>Práctica tipo EMS — 20 preguntas</p>
   </header>
 
@@ -268,6 +299,7 @@
     <p>¡Completaste la práctica!</p>
     <div class="puntaje" id="puntaje-final">0/20</div>
     <p>Podés repetirla cuando quieras: el orden de las opciones cambia cada vez.</p>
+    <div class="revision" id="revision"></div>
     <button class="btn-repetir" id="btn-repetir">Repetir práctica</button>
   </div>
 </div>
@@ -375,17 +407,16 @@ const bloqueC = [
   },
   {
     tipo: 'lineales',
-    pregunta: 'Una recta pasa por los puntos (0, 3) y (2, 11). ¿Cuál es su pendiente?',
-    opciones: ['4', '8', '2', '3'],
+    pregunta: 'La altura de una planta, en cm, según las semanas x desde que se plantó es f(x) = 3x + 12. ¿Qué representa el número 12?',
+    opciones: ['La altura inicial de la planta', 'Cuánto crece la planta por semana', 'La altura a las 12 semanas', 'Las semanas que tarda en crecer'],
     correcta: 0,
-    explicacion: 'Pendiente = (y₂ − y₁)/(x₂ − x₁) = (11 − 3)/(2 − 0) = 8/2 = 4.'
+    explicacion: 'En f(x) = mx + b, b es el valor inicial: la altura cuando x = 0, o sea al plantarla (12 cm). El 3 es lo que crece por semana.'
   },
   {
     tipo: 'lineales',
     pregunta: 'Dos plataformas de streaming tienen y suscriptores en total después de x meses:\nPlataforma A: y = 120x + 500\nPlataforma B: y = 90x + 800\n¿Cuál plataforma gana suscriptores más rápido mes a mes?',
     opciones: ['Plataforma A, porque tiene mayor pendiente', 'Plataforma B, porque tiene mayor ordenada al origen', 'Ambas crecen igual de rápido', 'Plataforma B, porque empieza con más suscriptores'],
     correcta: 0,
-    svg: 'lineasAB',
     explicacion: 'La pendiente indica cuánto crece y por cada mes. A tiene pendiente 120 y B tiene pendiente 90; como 120 > 90, A crece más rápido, aunque B empiece arriba.'
   },
   {
@@ -393,7 +424,6 @@ const bloqueC = [
     pregunta: 'Usando las mismas plataformas (A: y = 120x + 500; B: y = 90x + 800), ¿en qué mes tendrán la misma cantidad de suscriptores?',
     opciones: ['Mes 10', 'Mes 5', 'Mes 15', 'Mes 8'],
     correcta: 0,
-    svg: 'lineasAB',
     explicacion: 'Igualando las expresiones: 120x + 500 = 90x + 800 → 30x = 300 → x = 10.'
   },
   {
@@ -538,6 +568,7 @@ let indiceActual = 0;
 let aciertos = 0;
 let ordenOpciones = [];
 let respondida = false;
+let respuestas = [];
 
 const elEtiquetaTipo = document.getElementById('etiqueta-tipo');
 const elEnunciado = document.getElementById('enunciado');
@@ -551,6 +582,7 @@ const elProgresoRelleno = document.getElementById('progreso-relleno');
 const elTarjetaPregunta = document.getElementById('tarjeta-pregunta');
 const elTarjetaFinal = document.getElementById('tarjeta-final');
 const elPuntajeFinal = document.getElementById('puntaje-final');
+const elRevision = document.getElementById('revision');
 
 function mezclarOpciones(pregunta){
   const arr = pregunta.opciones.map((texto, i) => ({texto, esCorrecta: i === pregunta.correcta}));
@@ -595,35 +627,20 @@ function renderPregunta(){
   });
 
   elProgresoActual.textContent = `Pregunta ${indiceActual + 1} de ${preguntas.length}`;
-  elProgresoAciertos.textContent = indiceActual > 0 ? `${aciertos} correctas` : '';
+  elProgresoAciertos.textContent = '';
   elProgresoRelleno.style.width = `${(indiceActual / preguntas.length) * 100}%`;
 }
 
 function seleccionarOpcion(boton, opcionElegida){
-  if(respondida) return;
-  respondida = true;
-
+  // No se dice si es correcta hasta el final: solo se marca la elegida.
+  // Mientras no toque "Siguiente" puede cambiar de opción.
   const p = preguntas[indiceActual];
-  const botones = elOpciones.querySelectorAll('.opcion');
-  botones.forEach(b => b.disabled = true);
-
-  if(opcionElegida.esCorrecta){
-    boton.classList.add('correcta');
-    elFeedback.className = 'feedback mostrar exito';
-    elFeedback.innerHTML = `¡Correcto! <span class="explicacion">${p.explicacion}</span>`;
-    aciertos++;
-  } else {
-    boton.classList.add('incorrecta');
-    const correctaTexto = ordenOpciones.find(o => o.esCorrecta).texto;
-    botones.forEach(b => { if(b.textContent === correctaTexto) b.classList.add('correcta'); });
-    elFeedback.className = 'feedback mostrar error';
-    elFeedback.innerHTML = `No es esa. La respuesta correcta es: ${correctaTexto}. <span class="explicacion">${p.explicacion}</span>`;
-  }
-
+  elOpciones.querySelectorAll('.opcion').forEach(b => b.classList.remove('elegida'));
+  boton.classList.add('elegida');
+  respuestas[indiceActual] = { texto: opcionElegida.texto, esCorrecta: opcionElegida.esCorrecta };
   elBtnSiguiente.classList.add('mostrar');
   elBtnSiguiente.textContent = indiceActual === preguntas.length - 1 ? 'Ver resultado' : 'Siguiente →';
 }
-
 elBtnSiguiente.addEventListener('click', () => {
   indiceActual++;
   if(indiceActual >= preguntas.length){
@@ -632,19 +649,29 @@ elBtnSiguiente.addEventListener('click', () => {
     renderPregunta();
   }
 });
-
 function mostrarFinal(){
+  aciertos = respuestas.filter(r => r && r.esCorrecta).length;
   elTarjetaPregunta.classList.add('oculto');
   elTarjetaFinal.classList.remove('oculto');
   elProgresoRelleno.style.width = '100%';
   elProgresoActual.textContent = `Pregunta ${preguntas.length} de ${preguntas.length}`;
   elProgresoAciertos.textContent = `${aciertos} correctas`;
   elPuntajeFinal.textContent = `${aciertos}/${preguntas.length}`;
+  // Revisión de las 20: tu respuesta, la correcta y el razonamiento
+  elRevision.innerHTML = preguntas.map((p, i) => {
+    const r = respuestas[i];
+    const correctaTexto = p.opciones[p.correcta];
+    const tu = r.esCorrecta
+      ? `<p class="rev-tu ok">Tu respuesta: ${r.texto} ✓</p>`
+      : `<p class="rev-tu mal">Tu respuesta: ${r.texto} ✗ — La correcta es: ${correctaTexto}</p>`;
+    return `<div class="revision-item"><p class="rev-enunciado">${i + 1}. ${p.pregunta}</p>${tu}<p class="rev-exp">${p.explicacion}</p></div>`;
+  }).join('');
+  window.scrollTo(0, 0);
 }
-
 document.getElementById('btn-repetir').addEventListener('click', () => {
   indiceActual = 0;
   aciertos = 0;
+  respuestas = [];
   elTarjetaFinal.classList.add('oculto');
   elTarjetaPregunta.classList.remove('oculto');
   renderPregunta();
